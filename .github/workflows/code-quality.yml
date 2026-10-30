@@ -30,24 +30,24 @@ jobs:
         with:
           bun-version: "1.2.23" # pin: 1.4.4 hangs at install from runners (P4); revisit upstream
 
-      - name: Install dependencies (with hang-guard retries)
+      - name: Install dependencies (with hang-guard + mirror fallback)
         run: |
-          for i in 1 2 3; do
-            echo "attempt $i"
-            if timeout 420 bun install --frozen-lockfile --network-concurrency 16; then break; fi
-            [ "$i" = 3 ] && exit 1
-            sleep 10
-          done
+          echo "attempt 1: default registry"
+          if timeout 420 bun install --frozen-lockfile --network-concurrency 16; then exit 0; fi
+          echo "attempt 2: npmmirror fallback (registry degraded; frozen-lockfile verifies hashes)"
+          if timeout 420 bun install --frozen-lockfile --network-concurrency 16 --registry https://registry.npmmirror.com; then exit 0; fi
+          echo "attempt 3: default registry again"
+          timeout 420 bun install --frozen-lockfile --network-concurrency 16
 
       - name: Install classroom-service dependencies
         working-directory: mini-services/classroom-service
         run: |
-          for i in 1 2 3; do
-            echo "attempt $i"
-            if timeout 180 bun install --frozen-lockfile --network-concurrency 16; then break; fi
-            [ "$i" = 3 ] && exit 1
-            sleep 10
-          done
+          echo "attempt 1: default registry"
+          if timeout 180 bun install --frozen-lockfile --network-concurrency 16; then exit 0; fi
+          echo "attempt 2: npmmirror fallback"
+          if timeout 180 bun install --frozen-lockfile --network-concurrency 16 --registry https://registry.npmmirror.com; then exit 0; fi
+          echo "attempt 3: default registry again"
+          timeout 180 bun install --frozen-lockfile --network-concurrency 16
 
       - name: Generate Prisma client
         run: bunx prisma generate
