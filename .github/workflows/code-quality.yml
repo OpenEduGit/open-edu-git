@@ -13,9 +13,18 @@ concurrency:
 jobs:
   quality:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    # 10min proved too tight for a cold-runner bun install (P4 PR #3 timed out
+    # mid-install); 20min matches the test job and the cache makes it moot.
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+
+      - name: Cache bun
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: bun-${{ runner.os }}-
 
       - uses: oven-sh/setup-bun@v2
         with:
