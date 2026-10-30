@@ -1,5 +1,12 @@
 # ADR-0004 — نشست‌های کوکی HMAC (تا JWT)
 
+<!--
+NOTE (added 2026-10-30): The string "openedu-git-dev-secret-change-in-production"
+below is a post-mortem QUOTE of the pre-P2 vulnerability, retained for documentation.
+It is NOT a live credential. It was removed from src/ in commit b20c924 (P2).
+Secret-scanning CI is scoped to code files only — do not modify docs to "clean" this.
+-->
+
 - **Status:** ACCEPTED — مهاجرت به JWT برنامه‌ریزی‌شده در **P6**
 - **Date:** 2026-10-30
 - **Supersedes:** بخش «Authentication» در DECISIONS v1 (JWT access + refresh از روز اول).

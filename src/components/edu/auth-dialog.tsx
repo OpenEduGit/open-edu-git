@@ -2,7 +2,7 @@
 
 // OpenEdu Git — login/register dialog (tabs), controlled by the global store.
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -44,12 +44,16 @@ export function AuthDialog() {
   const [regPassword, setRegPassword] = useState("");
   const [regRole, setRegRole] = useState<string>(ROLES[0]);
 
-  useEffect(() => {
+  // Reset stale error/busy whenever the dialog reopens — adjust state during
+  // render on prop change (react.dev/learn/you-might-not-need-an-effect).
+  const [prevAuthOpen, setPrevAuthOpen] = useState(authOpen);
+  if (authOpen !== prevAuthOpen) {
+    setPrevAuthOpen(authOpen);
     if (authOpen) {
       setError(null);
       setBusy(false);
     }
-  }, [authOpen]);
+  }
 
   function validate(mode: "login" | "register"): string | null {
     if (mode === "login") {

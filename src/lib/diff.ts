@@ -86,18 +86,18 @@ export function computePercentages<T extends { score: number }>(rows: T[]): (T &
   if (total <= 0) {
     return rows.map((r) => ({ ...r, percentage: rows.length ? Math.round(100 / rows.length) : 0 }));
   }
-  const withRaw = rows.map((r) => ({ ...r, raw: (r.score / total) * 100 }));
-  const rounded = withRaw.map((r) => ({ ...r, percentage: Math.floor(r.raw) }));
+  const raws = rows.map((r) => (r.score / total) * 100);
+  const percentages = raws.map((raw) => Math.floor(raw));
   // Distribute remaining points to the largest fractional parts
-  let rem = 100 - rounded.reduce((s, r) => s + r.percentage, 0);
-  const order = withRaw
-    .map((r, idx) => ({ idx, frac: r.raw - Math.floor(r.raw) }))
+  let rem = 100 - percentages.reduce((s, p) => s + p, 0);
+  const order = raws
+    .map((raw, idx) => ({ idx, frac: raw - Math.floor(raw) }))
     .sort((x, y) => y.frac - x.frac);
   let k = 0;
   while (rem > 0 && order.length > 0) {
-    rounded[order[k % order.length].idx].percentage += 1;
+    percentages[order[k % order.length].idx] += 1;
     rem -= 1;
     k += 1;
   }
-  return rounded.map(({ raw: _raw, ...rest }) => rest);
+  return rows.map((r, idx) => ({ ...r, percentage: percentages[idx] }));
 }

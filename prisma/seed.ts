@@ -1,5 +1,6 @@
 // OpenEdu Git — seed script (run: bun prisma/seed.ts)
 import { PrismaClient } from "@prisma/client";
+import type { Review } from "@prisma/client";
 import { hashPassword } from "../src/lib/server/auth";
 import { lineDiff, countContentLines } from "../src/lib/diff";
 
@@ -926,7 +927,7 @@ $y' = 5(2x+1)^4 \\times 2 = 10(2x+1)^4$
   ];
   const allReviews = [...reviews, ...extras.map((e) => ({ pamphletId: e.p.id, userId: e.u, rating: e.rating, comment: e.comment, days: e.days, helpful: e.helpful, unhelpful: e.unhelpful }))];
 
-  const createdReviews = [];
+  const createdReviews: Review[] = [];
   for (const r of allReviews) {
     const created = await db.review.create({
       data: {

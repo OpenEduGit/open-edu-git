@@ -4,7 +4,7 @@
 // GitHub-style tabs: محتوا / تاریخچه / مشارکت‌کنندگان / بازخوردها / درخواست‌های ادغام.
 
 import { GitMerge, Pencil, Star, ThumbsDown, ThumbsUp, ArrowRight, Eye, GitFork, History } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -217,11 +217,15 @@ export function PamphletView({ id }: { id: string }) {
 
   const p = detail.data;
 
-  // keep the MR dialog title/desc fresh-ish
-  useEffect(() => {
+  // keep the MR dialog title/desc fresh-ish — clear drafts whenever the
+  // pamphlet id changes; adjust state during render on prop change
+  // (react.dev/learn/you-might-not-need-an-effect)
+  const [prevId, setPrevId] = useState(id);
+  if (id !== prevId) {
+    setPrevId(id);
     setMrTitle("");
     setMrDesc("");
-  }, [id]);
+  }
 
   async function handleFork() {
     if (!user) {
