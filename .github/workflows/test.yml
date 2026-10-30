@@ -29,7 +29,7 @@ jobs:
 
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: "1.2.23" # pin: 1.4.4 hangs at install from runners (P4); revisit upstream
 
       - name: Install dependencies (root, with hang-guard retries)
         run: |
