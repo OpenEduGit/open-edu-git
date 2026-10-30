@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# Block AI agent/model names in commit messages.
+# This project may be written with AI assistance, but commits speak with a human voice.
+MSG_FILE="$1"
+MSG=$(cat "$MSG_FILE")
+
+BLOCKLIST='claude|chatgpt|gpt-[0-9]|openai|anthropic|copilot|cursor[- ]ai|gemini|z\.ai|zai|codex|llama'
+
+if echo "$MSG" | grep -qiE "$BLOCKLIST"; then
+  echo "❌ Commit message contains a blocked AI agent/model name." >&2
+  echo "   Blocked pattern: $BLOCKLIST" >&2
+  echo "   Rewrite the message without referencing the tool that helped write it." >&2
+  echo "   Emergency bypass: git commit --no-verify (discouraged; will be rejected by CI)." >&2
+  exit 1
+fi
+
+if echo "$MSG" | grep -qiE 'Co-Authored-By:.*(bot|ai|agent|gpt|claude|copilot)'; then
+  echo "❌ Co-Authored-By trailers cannot reference AI agents or bots." >&2
+  exit 1
+fi
+
+exit 0

@@ -1,0 +1,29 @@
+name: گزارش اشکال
+description: چیزی درست کار نمی‌کند
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: چه اتفاقی افتاد؟
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: چه انتظاری داشتی؟
+    validations:
+      required: true
+  - type: input
+    id: page
+    attributes:
+      label: کدام صفحه/مسیر؟
+      placeholder: "مثلاً #/pamphlet/abc یا /api/v1/stats"
+  - type: textarea
+    id: steps
+    attributes:
+      label: مراحل بازتولید
+      placeholder: |
+        1. برو به ...
+        2. کلیک کن روی ...
+        3. ...
