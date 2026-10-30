@@ -24,6 +24,10 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      - name: Install classroom-service dependencies
+        working-directory: mini-services/classroom-service
+        run: bun install --frozen-lockfile
+
       - name: Generate Prisma client
         run: bunx prisma generate
 
