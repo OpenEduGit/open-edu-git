@@ -36,13 +36,7 @@ jobs:
 
       - name: Install classroom-service dependencies
         working-directory: mini-services/classroom-service
-        run: |
-          echo "attempt 1: default registry"
-          if timeout 180 bun install --frozen-lockfile --network-concurrency 16; then exit 0; fi
-          echo "attempt 2: npmmirror fallback"
-          if timeout 180 bun install --frozen-lockfile --network-concurrency 16 --registry https://registry.npmmirror.com; then exit 0; fi
-          echo "attempt 3: default registry again"
-          timeout 180 bun install --frozen-lockfile --network-concurrency 16
+        run: bun install --frozen-lockfile --network-concurrency 16
 
       - name: Generate Prisma client
         run: bunx prisma generate
