@@ -1,0 +1,332 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  fullName     String
+  title        String? // آقای / خانم / دکتر
+  bio          String?
+  expertise    String? // comma-separated Persian tags
+  role         String   @default("معلم") // معلم | دانش‌آموز | تایپیست | برنامه‌نویس
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  pamphlets         Pamphlet[]         @relation("AuthoredPamphlets")
+  versions          PamphletVersion[]
+  reviews           Review[]
+  votes             ReviewVote[]
+  mergeRequests     MergeRequest[]     @relation("CreatedMRs")
+  reviewedRequests  MergeRequest[]     @relation("ReviewedMRs")
+  contributions     Contribution[]
+
+  // Phase 2 — teaching marketplace
+  wallet            Wallet?
+  txns              Txn[]
+  slots             TeacherSlot[]      @relation("TeachingSlots")
+  taughtSessions    ClassSession[]     @relation("TaughtSessions")
+  attendedSessions  ClassSession[]     @relation("AttendedSessions")
+  sentMessages      SessionMessage[]   @relation("SentMessages")
+  sessionReviews    SessionReview[]    @relation("GivenSessionReviews")
+  courses           VideoCourse[]      @relation("AuthoredCourses")
+  enrollments       CourseEnrollment[] @relation("Enrollments")
+  courseReviews     CourseReview[]     @relation("GivenCourseReviews")
+  lessonProgress    LessonProgress[]
+}
+
+model Pamphlet {
+  id             String   @id @default(cuid())
+  title          String
+  description    String?
+  authorId       String
+  grade          String // پایه تحصیلی
+  subject        String // درس
+  chapter        String? // فصل
+  teachingMethod String // روش تدریس
+  difficulty     String // سطح دشواری
+  status         String   @default("PUBLISHED")
+  forkedFromId   String? // جزوهٔ مبدأ در صورت فورک
+  viewCount      Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  author     User               @relation("AuthoredPamphlets", fields: [authorId], references: [id])
+  forkedFrom Pamphlet?          @relation("ForkLineage", fields: [forkedFromId], references: [id])
+  forks      Pamphlet[]         @relation("ForkLineage")
+  versions   PamphletVersion[]
+  reviews    Review[]
+  contributions Contribution[]
+  sourceMRs  MergeRequest[]     @relation("MRSource")
+  targetMRs  MergeRequest[]     @relation("MRTarget")
+
+  @@index([grade, subject])
+  @@index([authorId])
+}
+
+model PamphletVersion {
+  id            String   @id @default(cuid())
+  pamphletId    String
+  versionNumber Int
+  content       String // Markdown
+  changeSummary String?
+  createdById   String
+  createdAt     DateTime @default(now())
+
+  pamphlet  Pamphlet @relation(fields: [pamphletId], references: [id], onDelete: Cascade)
+  createdBy User     @relation(fields: [createdById], references: [id])
+
+  @@unique([pamphletId, versionNumber])
+  @@index([pamphletId])
+}
+
+model Review {
+  id           String   @id @default(cuid())
+  pamphletId   String
+  userId       String
+  rating       Int // 1..5
+  comment      String
+  helpfulBase  Int      @default(0) // seed/aggregate base count (real votes add on top)
+  unhelpfulBase Int     @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  pamphlet Pamphlet    @relation(fields: [pamphletId], references: [id], onDelete: Cascade)
+  user     User        @relation(fields: [userId], references: [id])
+  votes    ReviewVote[]
+
+  @@unique([pamphletId, userId])
+  @@index([pamphletId])
+}
+
+model ReviewVote {
+  id       String @id @default(cuid())
+  reviewId String
+  userId   String
+  value    Int // 1 = مفید | -1 = غیرمفید
+
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@unique([reviewId, userId])
+}
+
+model MergeRequest {
+  id          String    @id @default(cuid())
+  sourceId    String // جزوهٔ فورک‌شده (پیشنهاددهنده)
+  targetId    String // جزوهٔ اصلی
+  title       String
+  description String?
+  status      String    @default("OPEN") // OPEN | APPROVED→MERGED | REJECTED
+  createdById String
+  reviewedById String?
+  reviewedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  source     Pamphlet @relation("MRSource", fields: [sourceId], references: [id], onDelete: Cascade)
+  target     Pamphlet @relation("MRTarget", fields: [targetId], references: [id], onDelete: Cascade)
+  createdBy  User     @relation("CreatedMRs", fields: [createdById], references: [id])
+  reviewedBy User?    @relation("ReviewedMRs", fields: [reviewedById], references: [id])
+
+  @@index([status])
+  @@index([targetId])
+}
+
+model Contribution {
+  id         String @id @default(cuid())
+  pamphletId String
+  userId     String
+  score      Float
+
+  pamphlet Pamphlet @relation(fields: [pamphletId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id])
+
+  @@unique([pamphletId, userId])
+}
+
+// ===================== Phase 2 — Teaching Marketplace =====================
+
+model Wallet {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  balance   Int      @default(0) // Toman (تومان)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Txn {
+  id           String   @id @default(cuid())
+  userId       String
+  type         String // DEPOSIT | WITHDRAW | SESSION_PAYMENT | SESSION_REFUND | SESSION_EARNING | COURSE_PURCHASE | COURSE_EARNING
+  amount       Int // signed: + credit / − debit
+  balanceAfter Int
+  description  String
+  status       String   @default("SUCCESS") // PENDING | SUCCESS | FAILED
+  refType      String? // SESSION | COURSE | GATEWAY | null
+  refId        String?
+  authority    String? // mock gateway authority (deposits)
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, createdAt])
+  @@index([authority])
+}
+
+model TeacherSlot {
+  id              String   @id @default(cuid())
+  teacherId       String
+  startAt         DateTime
+  durationMinutes Int      @default(60)
+  price           Int // Toman per session
+  status          String   @default("OPEN") // OPEN | BOOKED | BLOCKED
+  createdAt       DateTime @default(now())
+
+  teacher User          @relation("TeachingSlots", fields: [teacherId], references: [id])
+  session ClassSession?
+
+  @@index([teacherId, startAt])
+  @@index([status])
+}
+
+model ClassSession {
+  id              String   @id @default(cuid())
+  slotId          String   @unique
+  teacherId       String
+  studentId       String
+  startAt         DateTime
+  endAt           DateTime
+  durationMinutes Int
+  price           Int // total paid by student (Toman)
+  teacherShare    Int // 80%
+  commission      Int // 20% platform share
+  status          String   @default("BOOKED") // BOOKED | COMPLETED | CANCELLED_STUDENT | CANCELLED_TEACHER
+  meetingCode     String   @unique // 6-char uppercase alnum
+  topic           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  slot     TeacherSlot     @relation(fields: [slotId], references: [id])
+  teacher  User            @relation("TaughtSessions", fields: [teacherId], references: [id])
+  student  User            @relation("AttendedSessions", fields: [studentId], references: [id])
+  messages SessionMessage[]
+  review   SessionReview?
+
+  @@index([teacherId])
+  @@index([studentId])
+}
+
+model SessionMessage {
+  id        String   @id @default(cuid())
+  sessionId String
+  senderId  String
+  body      String
+  createdAt DateTime @default(now())
+
+  session ClassSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sender  User         @relation("SentMessages", fields: [senderId], references: [id])
+
+  @@index([sessionId])
+}
+
+model SessionReview {
+  id        String   @id @default(cuid())
+  sessionId String   @unique
+  userId    String // the student who attended
+  rating    Int // 1..5
+  comment   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  session ClassSession @relation(fields: [sessionId], references: [id])
+  user    User         @relation("GivenSessionReviews", fields: [userId], references: [id])
+}
+
+model VideoCourse {
+  id          String   @id @default(cuid())
+  teacherId   String
+  title       String
+  description String?
+  grade       String
+  subject     String
+  level       String? // سطح دشواری (DIFFICULTIES) — optional
+  price       Int      @default(0) // Toman; 0 = رایگان
+  coverUrl    String?
+  status      String   @default("PUBLISHED") // DRAFT | PUBLISHED
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  teacher     User               @relation("AuthoredCourses", fields: [teacherId], references: [id])
+  lessons     VideoLesson[]
+  enrollments CourseEnrollment[]
+  reviews     CourseReview[]
+
+  @@index([grade, subject])
+  @@index([teacherId])
+}
+
+model VideoLesson {
+  id              String  @id @default(cuid())
+  courseId        String
+  order           Int
+  title           String
+  description     String?
+  videoUrl        String // direct mp4/https URL (signed URLs in production)
+  durationMinutes Int?
+  isFreePreview   Boolean @default(false)
+
+  course   VideoCourse      @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  progress LessonProgress[]
+
+  @@unique([courseId, order])
+}
+
+model CourseEnrollment {
+  id        String   @id @default(cuid())
+  courseId  String
+  studentId String
+  price     Int // price paid at purchase time
+  createdAt DateTime @default(now())
+
+  course  VideoCourse @relation(fields: [courseId], references: [id])
+  student User        @relation("Enrollments", fields: [studentId], references: [id])
+
+  @@unique([courseId, studentId])
+}
+
+model CourseReview {
+  id        String   @id @default(cuid())
+  courseId  String
+  userId    String
+  rating    Int // 1..5
+  comment   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  course VideoCourse @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user   User        @relation("GivenCourseReviews", fields: [userId], references: [id])
+
+  @@unique([courseId, userId])
+}
+
+model LessonProgress {
+  id         String   @id @default(cuid())
+  lessonId   String
+  userId     String
+  watched    Boolean  @default(true)
+  watchedAt  DateTime @default(now())
+
+  lesson VideoLesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  user   User        @relation(fields: [userId], references: [id])
+
+  @@unique([lessonId, userId])
+}
