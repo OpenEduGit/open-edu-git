@@ -13,7 +13,7 @@ concurrency:
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     env:
       # Required at module load of src/lib/server/auth.ts (see ADR-0004)
       AUTH_SECRET: "ci-test-secret-32-bytes-minimum-length"
@@ -31,12 +31,24 @@ jobs:
         with:
           bun-version: latest
 
-      - name: Install dependencies (root)
-        run: bun install --frozen-lockfile
+      - name: Install dependencies (root, with hang-guard retries)
+        run: |
+          for i in 1 2 3; do
+            echo "attempt $i"
+            if timeout 420 bun install --frozen-lockfile --network-concurrency 16; then break; fi
+            [ "$i" = 3 ] && exit 1
+            sleep 10
+          done
 
       - name: Install dependencies (classroom-service)
         working-directory: mini-services/classroom-service
-        run: bun install --frozen-lockfile
+        run: |
+          for i in 1 2 3; do
+            echo "attempt $i"
+            if timeout 180 bun install --frozen-lockfile --network-concurrency 16; then break; fi
+            [ "$i" = 3 ] && exit 1
+            sleep 10
+          done
 
       - name: Generate Prisma client
         run: bunx prisma generate

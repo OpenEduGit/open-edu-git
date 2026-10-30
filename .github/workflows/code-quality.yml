@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     # 10min proved too tight for a cold-runner bun install (P4 PR #3 timed out
     # mid-install); 20min matches the test job and the cache makes it moot.
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
@@ -30,12 +30,24 @@ jobs:
         with:
           bun-version: latest
 
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
+      - name: Install dependencies (with hang-guard retries)
+        run: |
+          for i in 1 2 3; do
+            echo "attempt $i"
+            if timeout 420 bun install --frozen-lockfile --network-concurrency 16; then break; fi
+            [ "$i" = 3 ] && exit 1
+            sleep 10
+          done
 
       - name: Install classroom-service dependencies
         working-directory: mini-services/classroom-service
-        run: bun install --frozen-lockfile
+        run: |
+          for i in 1 2 3; do
+            echo "attempt $i"
+            if timeout 180 bun install --frozen-lockfile --network-concurrency 16; then break; fi
+            [ "$i" = 3 ] && exit 1
+            sleep 10
+          done
 
       - name: Generate Prisma client
         run: bunx prisma generate
