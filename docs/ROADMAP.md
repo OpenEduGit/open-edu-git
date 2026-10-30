@@ -39,7 +39,7 @@ gantt
     axisFormat %Y-%m
     section سخت‌سازی پروداکشن
     P3 تست‌های خودکار + رفع lint/tsc   :p3, 2026-11, 1M
-    P2b گیت تمیز + ریموت + GitFlow    :p2b, 2026-11, 2W
+    P2b گیت تمیز + ریموت + GitHub Flow :p2b, 2026-11, 2W
     P4 مهاجرت PostgreSQL              :p4, after p3, 1M
     P5 MinIO و آپلود فایل             :p5, after p4, 1M
     P6 JWT + امنیت نشست               :p6, after p4, 3W
@@ -175,7 +175,7 @@ gantt
 **هدف:** تبدیل MVP اجراشده به پلتفرم آمادهٔ عمومی‌شدن — کیفیت، زیرساخت، امنیت.
 
 - [ ] **P3** — تست‌های خودکار (Vitest + Playwright برای جریان‌های اصلی)، رفع ۴ خطای lint و ۳ خطای tsc، حذف `ignoreBuildErrors`، پاکسازی فایل‌های مرده (`tailwind.config.ts`)
-- [ ] **P2b** — گیت تمیز (حذف آرتیفکت‌ها از ایندکس)، راه‌اندازی ریموت، اعمال GitFlow ([adr/0008](adr/0008-gitflow-going-forward.md)، [GIT-STRATEGY.md](GIT-STRATEGY.md))
+- [x] **P2b** — گیت تمیز (حذف آرتیفکت‌ها از ایندکس)، راه‌اندازی ریموت، اعمال GitHub Flow ([adr/0008](adr/0008-gitflow-going-forward.md)، [GIT-STRATEGY.md](GIT-STRATEGY.md))
 - [ ] **P4** — مهاجرت SQLite → PostgreSQL 16 + FTS فارسی ([adr/0002](adr/0002-sqlite-mvp-postgres-production.md))
 - [ ] **P5** — MinIO + آپلود واقعی PDF/Word + پیش‌نمایش ([adr/0007](adr/0007-markdown-in-db.md))
 - [ ] **P6** — JWT (access + refresh چرخشی) + حذف fallback secret + `secure` کوکی ([adr/0004](adr/0004-hmac-cookie-sessions.md))

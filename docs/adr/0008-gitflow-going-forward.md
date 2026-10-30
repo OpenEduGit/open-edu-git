@@ -1,25 +1,35 @@
-# ADR-0008 — GitFlow + Conventional Commits از این پس
+# ADR-0008 — استراتژی شاخه‌بندی: GitHub Flow (ساده‌شده، به‌جای GitFlow)
 
-- **Status:** ACCEPTED — اعمال عملی در **P2**
+- **Status:** ACCEPTED (بازنگری‌شده 2026-10-30 — پیش‌نویس اول GitFlow بود)
 - **Date:** 2026-10-30
+- **Supersedes:** پیش‌نویس قبلی همین ADR (GitFlow)
 
 ## Context
 
-وضعیت فعلی ریپو: فقط شاخهٔ `main`، **بدون remote**، ۳ کامیت با پیام UUID بی‌معنی (`f9cdfc5c-…`)، و فایل‌های غیرمنبع (دیتابیس، tool-results، agent-ctx، package-lock.json دوم) در تاریخچه. از این پس تاریخچه باید خوانا و قابل اتکا باشد. گزینه‌ها: GitHub Flow (ساده) یا GitFlow (ساختارمند). با وجود تک‌توسعه‌دهنده بودن، GitFlow سبک ارزش بازبینی خودی دارد.
+پیش‌نویس قبلی این ADR، GitFlow کلاسیک (main + develop + feature) را تعیین کرده بود.
+واقعیت: توسعه‌دهندهٔ فعلی تک‌نفره است، ADR-0001 فاز MVP را با Next.js جلو برد، و
+شاخهٔ `develop` در این مقطع سربار خالص است (بدون فایده‌ای که هزینهٔ merge-day اضافه
+کند). بهترین تجربه در تیم‌های کوچک: **GitHub Flow** — یک شاخهٔ پایدار + شاخه‌های
+کوتاه‌عمر به ازای هر تغییر.
 
 ## Decision
 
-**GitFlow:** `main` (پایدار) + `develop` (پیش‌فرض کار فعال) + `feature/*`, `fix/*`, `docs/*`, `release/*`, `hotfix/*`. پیام کامیت با **Conventional Commits** (`feat(scope): …`). PR برای هر تغییر روی `main`/`develop`. شرح عملیاتی: [docs/GIT-STRATEGY.md](../GIT-STRATEGY.md).
+- شاخهٔ پایدار: `main` (محافظت‌شده: PR الزامی، force-push ممنوع، حذف ممنوع،
+  حتی مدیران نیز از این قاعده مستثنی نیستند — Q6 کاربر).
+- شاخه‌های کوتاه‌عمر: `feature/<slug>`, `fix/<slug>`, `docs/<slug>`, `chore/<slug>`.
+  هر شاخه پس از merge حذف می‌شود.
+- پیام‌های commit به قالب **Conventional Commits** (feat:, fix:, docs:, chore:, refactor:, test:).
+- هیچ شاخهٔ `develop` تا اطلاع ثانوی. اگر روزی تیم به ≥۳ توسعه‌دهنده رسید و نیاز به
+  staging branch پیدا شد، ADR جدیدی ثبت می‌شود (Supersedes این).
 
 ## Consequences
 
-**(+)** تاریخچهٔ قابل‌فهم و ردیابی؛ نقطهٔ بازبینی حتی در self-review («main را خسته خراب نکنم»)؛ آماده بودن برایcontributors آینده؛ تگ‌گذاری SemVer تمیز ([CHANGELOG](../../CHANGELOG.md)).
+(+) تاریخچهٔ ساده، تمرکز روی تغییرات کوچک، merge-day ندارد.
+(+) branch protection روی `main` حتی برای تک‌نفره، دام «push اشتباه وسط شب» را می‌بندد.
+(−) نیاز به discipline فردی برای ایجاد PR حتی برای تغییرات کوچک. برای تسریع، در P3
+    CI به‌عنوان status check اجباری می‌شود و ادغام با ۰ approval مجاز است (self-merge).
 
-**(-)** سربار فرایند برای تک‌نفر — توجیه‌پذیر چون `develop` در دورهٔ فعال شاخهٔ روزمره است و PR فقط دو کلیک است.
+## Review trigger
 
-## Migration plan (P2)
-
-1. به‌روزرسانی `.gitignore` + `git rm --cached` آرتیفکت‌ها (فهرست: `/tmp/oeg-diag/13-git-plan.md`).
-2. «کامیت پایهٔ تمیز» فقط منبع (src, prisma/schema+seed, configs, docs).
-3. `git remote add origin …` + محافظت شاخه‌ها + قالب‌های Issue/PR.
-4. قاعدهٔ ماندگار: از این پس پیام کامیت معنادار — UUIDهای تاریخی در تاریخچه می‌مانند (بازنویسی تاریخچه نیازمند تصمیم جداگانه است).
+- تیم به ≥۳ توسعه‌دهندهٔ فعال رسید.
+- نیاز به محیط staging دائمی (که در آن صورت `develop` یا یک شاخهٔ `staging` معنا پیدا می‌کند).

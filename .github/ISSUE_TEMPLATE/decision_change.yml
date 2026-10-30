@@ -1,0 +1,25 @@
+name: پیشنهاد تغییر تصمیم فنی
+description: برای تغییر یک ADR موجود یا ثبت تصمیم جدید
+labels: ["decision-change"]
+body:
+  - type: input
+    id: adr
+    attributes:
+      label: کدام ADR؟
+      placeholder: "مثلاً ADR-0004"
+  - type: textarea
+    id: proposal
+    attributes:
+      label: تغییر پیشنهادی
+    validations:
+      required: true
+  - type: textarea
+    id: rationale
+    attributes:
+      label: چرا؟
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: تأثیر بر کد موجود

@@ -17,7 +17,7 @@
 | 0005 | درگاه پرداخت نمایشی (mock) تا e-namad | ✅ ACCEPTED — زرین‌پال در P10 | [adr/0005-mock-payment-gateway.md](adr/0005-mock-payment-gateway.md) |
 | 0006 | کلاس زنده: چت + تخته (بدون WebRTC فعلاً) | ✅ ACCEPTED — WebRTC در P11 | [adr/0006-chat-whiteboard-classroom.md](adr/0006-chat-whiteboard-classroom.md) |
 | 0007 | محتوای جزوه: Markdown در دیتابیس (تا MinIO) | ✅ ACCEPTED — MinIO در P5 | [adr/0007-markdown-in-db.md](adr/0007-markdown-in-db.md) |
-| 0008 | GitFlow + Conventional Commits از این پس | ✅ ACCEPTED — اعمال در P2 | [adr/0008-gitflow-going-forward.md](adr/0008-gitflow-going-forward.md) |
+| 0008 | GitHub Flow + Conventional Commits (بازنگری از GitFlow) | ✅ ACCEPTED — اعمال در P2 | [adr/0008-gitflow-going-forward.md](adr/0008-gitflow-going-forward.md) |
 
 ---
 

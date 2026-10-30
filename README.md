@@ -5,8 +5,10 @@
 [![Next.js 16](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org)
 [![Prisma](https://img.shields.io/badge/ORM-Prisma%206-2D3748)](https://www.prisma.io)
 [![DB: SQLite (dev)](https://img.shields.io/badge/DB-SQLite%20(dev)%20·%20PostgreSQL%20(planned)-008000)](docs/adr/0002-sqlite-mvp-postgres-production.md)
-[![License: AGPL v3](https://img.shields.io/badge/Code-AGPL%20v3-blue.svg)](#مجوز)
-[![Content License: CC BY-SA 4.0](https://img.shields.io/badge/Content-CC%20BY--SA%204.0-lightgrey)](https://creativecommons.org/licenses/by-sa/4.0/)
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](#مجوز)
+[![Content License: CC BY-SA 4.0](https://img.shields.io/badge/Content%20License-CC%20BY--SA%204.0-lightgrey)](https://creativecommons.org/licenses/by-sa/4.0/)
+[![Status: Phase 1+2 MVP](https://img.shields.io/badge/status-Phase%201%2B2%20MVP-yellow)]()
+[![GitHub repo](https://img.shields.io/badge/github-OpenEduGit%2Fopen--edu--git-181717?logo=github)](https://github.com/OpenEduGit/open-edu-git)
 ![RTL Ready](https://img.shields.io/badge/RTL-پشتیبانی%20کامل-orange)
 [![Telegram](https://img.shields.io/badge/تلگرام-گروه%20معلمان-blue)](https://t.me/OpenEduGit)
 

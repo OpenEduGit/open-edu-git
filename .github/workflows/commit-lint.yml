@@ -1,0 +1,28 @@
+name: Commit Message Check
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  check-commits:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Reject AI agent/model names in PR commits
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -e
+          BLOCK='claude|chatgpt|gpt-[0-9]|openai|anthropic|copilot|cursor[- ]ai|gemini|z\.ai|zai|codex|llama'
+          if git log "$BASE_SHA".."$HEAD_SHA" --format="%B" | grep -iE "$BLOCK"; then
+            echo "::error::One or more commit messages reference an AI agent/model."
+            exit 1
+          fi
+          if git log "$BASE_SHA".."$HEAD_SHA" --format="%B" | grep -iE 'Co-Authored-By:.*(bot|ai|agent)'; then
+            echo "::error::Co-Authored-By trailer references an AI agent."
+            exit 1
+          fi
+          echo "✅ commit messages clean"
