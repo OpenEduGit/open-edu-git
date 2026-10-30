@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     # 10min proved too tight for a cold-runner bun install (P4 PR #3 timed out
     # mid-install); 20min matches the test job and the cache makes it moot.
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
 
@@ -30,14 +30,9 @@ jobs:
         with:
           bun-version: "1.2.23" # pin: 1.4.4 hangs at install from runners (P4); revisit upstream
 
-      - name: Install dependencies (with hang-guard + mirror fallback)
-        run: |
-          echo "attempt 1: default registry"
-          if timeout 420 bun install --frozen-lockfile --network-concurrency 16; then exit 0; fi
-          echo "attempt 2: npmmirror fallback (registry degraded; frozen-lockfile verifies hashes)"
-          if timeout 420 bun install --frozen-lockfile --network-concurrency 16 --registry https://registry.npmmirror.com; then exit 0; fi
-          echo "attempt 3: default registry again"
-          timeout 420 bun install --frozen-lockfile --network-concurrency 16
+      # single long attempt (see note in test.yml)
+      - name: Install dependencies
+        run: bun install --frozen-lockfile --network-concurrency 16
 
       - name: Install classroom-service dependencies
         working-directory: mini-services/classroom-service
